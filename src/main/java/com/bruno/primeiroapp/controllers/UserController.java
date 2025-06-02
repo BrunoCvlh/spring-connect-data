@@ -1,9 +1,9 @@
 package com.bruno.primeiroapp.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,13 +41,27 @@ public class UserController {
         return result;
     }
 
-    @DeleteMapping(value = "/{id}") // A
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) { // A, C
         if (repository.existsById(id)) { // Verifica se o usuário existe antes de tentar deletar
             repository.deleteById(id); // B
             return ResponseEntity.noContent().build(); // Retorna 204 No Content para sucesso sem corpo
         } else {
             return ResponseEntity.notFound().build(); // Retorna 404 Not Found se o usuário não existir
+        }
+    }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
+        Optional<User> existingUserOptional = repository.findById(id);
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+            existingUser.setName(user.getName());
+            existingUser.setEmail(user.getEmail());
+            User updatedUser = repository.save(existingUser);
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }
